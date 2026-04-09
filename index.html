@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskMaster Pro | Productividad Personal</title>
+    <meta name="description" content="Gestiona tus tareas diarias, mide tu tiempo y genera reportes para tu jefe de forma profesional.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- SheetJS for Excel Export -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <!-- Chart.js for Dashboard -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <header class="main-header">
+            <div class="logo">
+                <span class="logo-icon">⚡</span>
+                <h1>TaskMaster <span class="pro-badge">PRO</span></h1>
+            </div>
+            <div class="header-actions">
+                <button id="btnPomodoro" class="btn btn-secondary pomodoro-btn" title="Iniciar Pomodoro">
+                    ⏱️ Pomodoro
+                </button>
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle">⚙️ Ajustes</button>
+                    <div class="dropdown-content">
+                        <button id="btnImportJson">📥 Importar JSON</button>
+                        <button id="btnExportJson">📤 Exportar JSON</button>
+                    </div>
+                </div>
+                <button id="btnSummary" class="btn btn-secondary" title="Ver resumen para mi jefe">
+                    📊 Resumen
+                </button>
+                <button id="btnExport" class="btn btn-secondary" title="Exportar a Excel">
+                    📄 Excel
+                </button>
+            </div>
+        </header>
+
+        <nav class="app-nav">
+            <button class="nav-btn active" data-view="tasks">Actividades</button>
+            <button class="nav-btn" data-view="dashboard">Estadísticas</button>
+            <button class="nav-btn" data-view="notes">Notas Rápidas</button>
+            <button id="btnThemeToggle" class="theme-toggle" title="Cambiar Tema">🌙</button>
+        </nav>
+
+        <main class="dashboard">
+
+            <section id="viewDashboard" class="dashboard-view" style="display: none;">
+                <div class="chart-grid">
+                    <div class="card chart-card">
+                        <h3>Tiempo por Categoría</h3>
+                        <div class="chart-container">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card chart-card">
+                        <h3>Productividad 7 Días</h3>
+                        <div class="chart-container">
+                            <canvas id="productivityChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="viewNotes" class="notes-view" style="display: none;">
+                <div class="split-layout">
+                    <div class="sidebar-column">
+                        <div class="notes-header">
+                            <h2>Mural de Notas</h2>
+                        </div>
+                        <div class="card add-note-card" style="margin-bottom: 2rem; padding: 1.5rem; background: var(--card-bg);">
+                            <textarea id="noteText" placeholder="Escribe algo rápido aquí... (Shift+Enter para nueva línea)" required style="width: 100%; height: 80px; background: rgba(255,255,255,0.05); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: var(--radius); padding: 1rem; margin-bottom: 1rem;"></textarea>
+                            <div class="note-controls" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <div class="color-picker" style="display: flex; gap: 0.75rem;">
+                                    <button class="color-btn active" data-color="yellow" style="background: #fff9c4;" title="Amarillo"></button>
+                                    <button class="color-btn" data-color="red" style="background: #ffcdd2;" title="Rojo"></button>
+                                    <button class="color-btn" data-color="green" style="background: #c8e6c9;" title="Verde"></button>
+                                    <button class="color-btn" data-color="blue" style="background: #bbdefb;" title="Azul"></button>
+                                </div>
+                                <span style="font-size: 0.8rem; opacity: 0.6;">Pastel</span>
+                            </div>
+                            <div class="submit-actions" style="display: flex; gap: 0.5rem;">
+                                <button id="btnCancelNoteEdit" class="btn btn-secondary" style="display: none; flex: 1;">Cancelar</button>
+                                <button id="btnSaveNote" class="btn btn-primary" style="flex: 2;">Guardar Nota</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="content-column">
+                        <div id="notesGrid" class="notes-grid">
+                            <!-- Notes will be injected here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="viewTasks" class="tasks-container">
+                <div class="split-layout">
+                    <div class="sidebar-column">
+                        <section class="task-input-section" style="margin-bottom: 3rem;">
+                            <div class="card add-task-card">
+                                <h2>Nueva Actividad</h2>
+                                <form id="taskForm" class="task-form">
+                                    <div class="input-group">
+                                        <input type="text" id="taskTitle" placeholder="¿Qué vas a hacer hoy?" required>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="input-group">
+                                            <label for="taskStart">Inicio</label>
+                                            <input type="datetime-local" id="taskStart">
+                                        </div>
+                                        <div class="input-group">
+                                            <label for="taskEnd">Fin</label>
+                                            <input type="datetime-local" id="taskEnd">
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="input-group">
+                                            <label for="taskCategory">Categoría</label>
+                                            <select id="taskCategory">
+                                                <option value="Generales">Generales</option>
+                                                <option value="Trabajo">Trabajo</option>
+                                                <option value="Reuniones">Reuniones</option>
+                                                <option value="Admin">Administrativo</option>
+                                                <option value="Personal">Personal</option>
+                                            </select>
+                                        </div>
+                                        <div class="input-group">
+                                            <label for="taskPriority">Prioridad</label>
+                                            <select id="taskPriority">
+                                                <option value="Baja">Baja</option>
+                                                <option value="Media" selected>Media</option>
+                                                <option value="Alta">Alta</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-row flex-end">
+                                        <label class="checkbox-container">
+                                            <input type="checkbox" id="taskRecurring">
+                                            <span class="checkmark"></span>
+                                            Tarea Recurrente
+                                        </label>
+                                        <div class="submit-actions">
+                                            <button type="button" id="btnCancelEdit" class="btn btn-secondary" style="display: none;">Cancelar</button>
+                                            <button type="submit" id="btnSubmitTask" class="btn btn-primary">Añadir Tarea</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="content-column">
+                        <div class="tasks-header">
+                            <h2>Tus Actividades</h2>
+                            <div class="filters">
+                                <button class="filter-btn active" data-filter="all">Todas</button>
+                                <button class="filter-btn" data-filter="pending">Pendientes</button>
+                                <button class="filter-btn" data-filter="completed">Completadas</button>
+                            </div>
+                        </div>
+                        <div id="taskList" class="task-grid">
+                            <!-- Tasks will be injected here -->
+                            <div class="empty-state">
+                                <p>No hay actividades registradas aún. ¡Empieza ahora!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Summary Modal -->
+        <div id="modalSummary" class="modal">
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h3>Resumen para mi jefe</h3>
+                <p>Copia este texto para enviarlo por correo o chat:</p>
+                <textarea id="summaryText" readonly></textarea>
+                <button id="btnCopySummary" class="btn btn-primary">Copiar al portapapeles</button>
+            </div>
+        </div>
+
+        <!-- Pomodoro Modal -->
+        <div id="modalPomodoro" class="modal">
+            <div class="modal-content pomodoro-modal-content">
+                <span class="close-modal">&times;</span>
+                <div class="pomodoro-timer">
+                    <div class="timer-display" id="pomodoroDisplay">25:00</div>
+                    <div class="timer-mode" id="pomodoroMode">Sesión de Trabajo</div>
+                    <div class="timer-controls">
+                        <button id="btnPomodoroStart" class="btn btn-primary">Iniciar</button>
+                        <button id="btnPomodoroReset" class="btn btn-secondary">Reset</button>
+                    </div>
+                </div>
+                <div class="pomodoro-settings">
+                    <p>Encuentra tu ritmo con el método Pomodoro.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hidden input for file upload -->
+        <input type="file" id="inputFileJson" style="display: none;" accept=".json">
+
+        <script src="app.js"></script>
+    </div>
+</body>
+</html>
