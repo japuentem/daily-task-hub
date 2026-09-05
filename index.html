@@ -1,213 +1,1337 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TaskMaster Pro | Productividad Personal</title>
-    <meta name="description" content="Gestiona tus tareas diarias, mide tu tiempo y genera reportes para tu jefe de forma profesional.">
+    <title>TaskMaster Pro | Daily Hub</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%233b82f6;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%238b5cf6;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='24' fill='url(%23grad)' /%3E%3Cpath d='M55 15 L25 55 L48 55 L40 85 L75 42 L50 42 Z' fill='white' /%3E%3C/svg%3E">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <!-- SheetJS for Excel Export -->
-    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-    <!-- Chart.js for Dashboard -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
+
 <body>
-    <div class="app-container">
-        <header class="main-header">
-            <div class="logo">
-                <span class="logo-icon">⚡</span>
-                <h1>TaskMaster <span class="pro-badge">PRO</span></h1>
+    <div class="app-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="side-nav">
+            <div class="nav-header">
+                <div class="nav-logo">⚡ <span class="logo-text">TaskMaster</span></div>
             </div>
-            <div class="header-actions">
-                <button id="btnPomodoro" class="btn btn-secondary pomodoro-btn" title="Iniciar Pomodoro">
-                    ⏱️ Pomodoro
-                </button>
-                <div class="dropdown">
-                    <button class="btn btn-secondary dropdown-toggle">⚙️ Ajustes</button>
-                    <div class="dropdown-content">
-                        <button id="btnImportJson">📥 Importar JSON</button>
-                        <button id="btnExportJson">📤 Exportar JSON</button>
+            
+            <div class="nav-scroll-area">
+                <div class="nav-section">
+                    <div class="nav-section-title">Mi Día</div>
+                    <button class="tab-btn" data-tab="tabCommandCenter" id="btnNavCommandCenter">
+                        <span class="tab-icon">🐻</span> Centro de Mando
+                    </button>
+                    <button class="tab-btn active" data-tab="tabTasks">
+                        <span class="tab-icon">📋</span> Actividades
+                    </button>
+                    <button class="tab-btn" data-tab="tabAgenda">
+                        <span class="tab-icon">📅</span> Agenda
+                    </button>
+                    <button class="tab-btn" data-tab="tabNestedTasks">
+                        <span class="tab-icon">🌳</span> Lista Jerárquica
+                    </button>
+                    <button class="tab-btn" data-tab="tabEvents">
+                        <span class="tab-icon">📡</span> Bitácora
+                    </button>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Gestión y Recursos</div>
+                    <button class="tab-btn" data-tab="tabNotes">
+                        <span class="tab-icon">💡</span> Ideas y Recados
+                    </button>
+                    <button class="tab-btn" data-tab="tabDocuments">
+                        <span class="tab-icon">📂</span> Documentos
+                    </button>
+                    <button class="tab-btn" data-tab="tabDirectory">
+                        <span class="tab-icon">📞</span> Directorio
+                    </button>
+                    <button class="tab-btn" data-tab="tabBatRunner">
+                        <span class="tab-icon">⚙️</span> Ejecutor
+                    </button>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Seguridad</div>
+                    <button class="tab-btn" data-tab="tabServerVault">
+                        <span class="tab-icon">🔒</span> Server Vault
+                    </button>
+                    <button class="tab-btn" data-tab="tabPasswords">
+                        <span class="tab-icon">🔑</span> Contraseñas
+                    </button>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Sistema</div>
+                    <button class="tab-btn" data-tab="tabVersions">
+                        <span class="tab-icon">📜</span> Versiones
+                    </button>
+                    <button class="tab-btn" data-tab="tabTrash">
+                        <span class="tab-icon">🗑️</span> Papelera
+                    </button>
+                </div>
+            </div>
+
+            
+        </aside>
+
+        <div class="main-content">
+            <!-- Preview Banner -->
+            <div id="previewBanner" class="preview-banner" style="display: none; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 12px 24px; font-weight: 600; text-align: center; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); justify-content: space-between; align-items: center; z-index: 1000; position: sticky; top: 10px; margin: 10px 20px 15px 20px;">
+                <span id="previewBannerText">⚠️ Previsualizando versión antigua</span>
+                <div style="display: flex; gap: 10px;">
+                    <button id="btnRestorePreview" class="btn btn-secondary btn-small">Restaurar esta versión</button>
+                    <button id="btnExitPreview" class="btn btn-secondary btn-small">Salir de previsualización</button>
+                </div>
+            </div>
+
+            <header class="content-header">
+                <div class="search-container">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Buscar en tableros y agenda...">
+                </div>
+                
+                <div class="header-actions teams-control-bar">
+                    <button id="btnPomodoro" class="teams-btn" title="Pomodoro">
+                        <span class="teams-btn-icon">🕒</span>
+                        <span class="teams-btn-label">Pomodoro</span>
+                    </button>
+                    <button id="btnSummary" class="teams-btn" title="Resumen del Día">
+                        <span class="teams-btn-icon">📊</span>
+                        <span class="teams-btn-label">Resumen</span>
+                    </button>
+                    <button id="btnExport" class="teams-btn" title="Exportar Excel">
+                        <span class="teams-btn-icon">📄</span>
+                        <span class="teams-btn-label">Excel</span>
+                    </button>
+                    <button id="btnThemeToggle" class="teams-btn" title="Cambiar Tema">
+                        <span class="teams-btn-icon">🌙</span>
+                        <span class="teams-btn-label">Tema</span>
+                    </button>
+                    <button id="btnUnlockVault" class="teams-btn" title="Desbloquear Bóvedas" style="color: var(--danger);">
+                        <span class="teams-btn-icon">🔒</span>
+                        <span class="teams-btn-label">Bóvedas</span>
+                    </button>
+                    <button id="btnSettings" class="teams-btn" title="Ajustes (JSON)">
+                        <span class="teams-btn-icon">⚙️</span>
+                        <span class="teams-btn-label">Ajustes</span>
+                    </button>
+                    
+                    <div class="teams-divider"></div>
+                    
+                    <div id="storageStatus" class="teams-btn teams-status-btn" title="Estado de la base de datos">
+                        <!-- JS dynamically updates this element -->
+                    </div>
+                    
+                    <button id="btnSaveVersion" class="teams-btn" title="Guardar Versión en DB">
+                        <span class="teams-btn-icon">☁️</span>
+                        <span class="teams-btn-label">Nube</span>
+                    </button>
+                    <button id="btnExportJson" class="teams-btn" title="Backup (JSON)">
+                        <span class="teams-btn-icon">💾</span>
+                        <span class="teams-btn-label">Exportar</span>
+                    </button>
+                    
+                    <div class="teams-divider"></div>
+                    
+                    <div class="user-greeting" style="margin-left: 10px; padding-left: 10px; border-left: 1px solid var(--border-color); text-align: right;">
+                        <h1 style="font-size: 0.95rem; font-weight: 700; margin: 0; line-height: 1;">¡Hola!</h1>
+                        <span class="date-today" id="currentDateDisplay" style="display: block; font-size: 0.75rem; margin-left: 0; margin-top: 4px; opacity: 0.8;">...</span>
                     </div>
                 </div>
-                <button id="btnSummary" class="btn btn-secondary" title="Ver resumen para mi jefe">
-                    📊 Resumen
-                </button>
-                <button id="btnExport" class="btn btn-secondary" title="Exportar a Excel">
-                    📄 Excel
-                </button>
-            </div>
-        </header>
+            </header>
 
-        <nav class="app-nav">
-            <button class="nav-btn active" data-view="tasks">Actividades</button>
-            <button class="nav-btn" data-view="dashboard">Estadísticas</button>
-            <button class="nav-btn" data-view="notes">Notas Rápidas</button>
-            <button id="btnThemeToggle" class="theme-toggle" title="Cambiar Tema">🌙</button>
-        </nav>
+            <!-- Old tabs nav removed -->
 
-        <main class="dashboard">
+            <!-- Active Task Banner -->
+            <div id="activeTaskBanner" class="active-task-banner" style="display: none;"></div>
 
-            <section id="viewDashboard" class="dashboard-view" style="display: none;">
-                <div class="chart-grid">
-                    <div class="card chart-card">
-                        <h3>Tiempo por Categoría</h3>
-                        <div class="chart-container">
-                            <canvas id="categoryChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="card chart-card">
-                        <h3>Productividad 7 Días</h3>
-                        <div class="chart-container">
-                            <canvas id="productivityChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            <main class="tabs-container">
+                <!-- ============================================================ -->
+                <!-- Tab: Centro de Mando (The Bear - Mise en Place)             -->
+                <!-- ============================================================ -->
+                <div id="tabCommandCenter" class="tab-pane">
+                    <div class="cmd-center">
 
-            <section id="viewNotes" class="notes-view" style="display: none;">
-                <div class="split-layout">
-                    <div class="sidebar-column">
-                        <div class="notes-header">
-                            <h2>Mural de Notas</h2>
-                        </div>
-                        <div class="card add-note-card" style="margin-bottom: 2rem; padding: 1.5rem; background: var(--card-bg);">
-                            <textarea id="noteText" placeholder="Escribe algo rápido aquí... (Shift+Enter para nueva línea)" required style="width: 100%; height: 80px; background: rgba(255,255,255,0.05); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: var(--radius); padding: 1rem; margin-bottom: 1rem;"></textarea>
-                            <div class="note-controls" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                                <div class="color-picker" style="display: flex; gap: 0.75rem;">
-                                    <button class="color-btn active" data-color="yellow" style="background: #fff9c4;" title="Amarillo"></button>
-                                    <button class="color-btn" data-color="red" style="background: #ffcdd2;" title="Rojo"></button>
-                                    <button class="color-btn" data-color="green" style="background: #c8e6c9;" title="Verde"></button>
-                                    <button class="color-btn" data-color="blue" style="background: #bbdefb;" title="Azul"></button>
+                        <!-- HEADER -->
+                        <div class="cmd-header">
+                            <div class="cmd-header-left">
+                                <div class="cmd-bear-badge">🐻</div>
+                                <div>
+                                    <h1 class="cmd-title">Centro de Mando</h1>
+                                    <p id="cmdSubtitle" class="cmd-subtitle">Cargando briefing del día...</p>
                                 </div>
-                                <span style="font-size: 0.8rem; opacity: 0.6;">Pastel</span>
                             </div>
-                            <div class="submit-actions" style="display: flex; gap: 0.5rem;">
-                                <button id="btnCancelNoteEdit" class="btn btn-secondary" style="display: none; flex: 1;">Cancelar</button>
-                                <button id="btnSaveNote" class="btn btn-primary" style="flex: 2;">Guardar Nota</button>
+                            <div class="cmd-header-right">
+                                <div class="cmd-clock-block">
+                                    <div id="cmdClock" class="cmd-clock">--:--</div>
+                                    <div id="cmdDate" class="cmd-date">--</div>
+                                </div>
+                                <div id="cmdNextEventBlock" class="cmd-next-event" style="display:none;">
+                                    <div class="cmd-next-label">Próximo evento</div>
+                                    <div id="cmdNextEventName" class="cmd-next-name">--</div>
+                                    <div id="cmdNextEventTime" class="cmd-next-time">--</div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="content-column">
-                        <div id="notesGrid" class="notes-grid">
-                            <!-- Notes will be injected here -->
+
+                        <!-- METRICS ROW -->
+                        <div class="cmd-metrics">
+                            <div class="cmd-metric-card">
+                                <div id="metricTodayTasks" class="cmd-metric-value">0</div>
+                                <div class="cmd-metric-label">Tareas de hoy</div>
+                            </div>
+                            <div class="cmd-metric-card">
+                                <div id="metricMeetings" class="cmd-metric-value">0</div>
+                                <div class="cmd-metric-label">Reuniones</div>
+                            </div>
+                            <div class="cmd-metric-card">
+                                <div id="metricCritical" class="cmd-metric-value cmd-metric-fire">0</div>
+                                <div class="cmd-metric-label">Críticas / Fire</div>
+                            </div>
+                            <div class="cmd-metric-card">
+                                <div id="metricDone" class="cmd-metric-value cmd-metric-done">0</div>
+                                <div class="cmd-metric-label">Completadas hoy</div>
+                            </div>
+                            <div class="cmd-metric-card">
+                                <div id="metricProgress" class="cmd-metric-value">0%</div>
+                                <div class="cmd-metric-label">Progreso</div>
+                                <div class="cmd-progress-bar"><div id="cmdProgressFill" class="cmd-progress-fill"></div></div>
+                            </div>
                         </div>
+
+                        <!-- BREAK RECOMMENDATION BANNER -->
+                        <div id="cmdBreakRec" class="cmd-break-rec" style="display:none;"></div>
+
+                        <!-- STATION COLUMNS -->
+                        <div class="cmd-stations">
+                            <!-- FIRE: Critical -->
+                            <div class="cmd-station cmd-station-fire">
+                                <div class="cmd-station-header">
+                                    <span class="cmd-station-dot dot-fire"></span>
+                                    <span class="cmd-station-title">FIRE</span>
+                                    <span id="cmd-count-fire" class="cmd-station-count">0</span>
+                                </div>
+                                <div class="cmd-station-sub">Urgente · Atención YA</div>
+                                <div id="cmdStationFire" class="cmd-station-items"></div>
+                            </div>
+
+                            <!-- AGENDA: Meetings -->
+                            <div class="cmd-station cmd-station-agenda">
+                                <div class="cmd-station-header">
+                                    <span class="cmd-station-dot dot-agenda"></span>
+                                    <span class="cmd-station-title">AGENDA</span>
+                                    <span id="cmd-count-agenda" class="cmd-station-count">0</span>
+                                </div>
+                                <div class="cmd-station-sub">Reuniones · Eventos de hoy</div>
+                                <div id="cmdStationAgenda" class="cmd-station-items"></div>
+                            </div>
+
+                            <!-- ON STATION: In Progress -->
+                            <div class="cmd-station cmd-station-on">
+                                <div class="cmd-station-header">
+                                    <span class="cmd-station-dot dot-on"></span>
+                                    <span class="cmd-station-title">ON STATION</span>
+                                    <span id="cmd-count-on" class="cmd-station-count">0</span>
+                                </div>
+                                <div class="cmd-station-sub">En proceso · Depende de mí</div>
+                                <div id="cmdStationOn" class="cmd-station-items"></div>
+                            </div>
+
+                            <!-- WAITING: Blocked -->
+                            <div class="cmd-station cmd-station-waiting">
+                                <div class="cmd-station-header">
+                                    <span class="cmd-station-dot dot-waiting"></span>
+                                    <span class="cmd-station-title">ESPERANDO</span>
+                                    <span id="cmd-count-waiting" class="cmd-station-count">0</span>
+                                </div>
+                                <div class="cmd-station-sub">Bloqueado · Otra área</div>
+                                <div id="cmdStationWaiting" class="cmd-station-items"></div>
+                            </div>
+                        </div>
+
+                        <!-- BOTTOM ROW: Timeline + Critical Notes + Events + Bat -->
+                        <div class="cmd-bottom">
+                            <!-- TIMELINE -->
+                            <div class="cmd-timeline-panel">
+                                <div class="cmd-panel-header">
+                                    <span>🕐</span> Timeline del Día
+                                    <span class="cmd-panel-sub">Próximas 8 horas</span>
+                                </div>
+                                <div id="cmdTimeline" class="cmd-timeline"></div>
+                            </div>
+
+                            <!-- CRITICAL NOTES -->
+                            <div class="cmd-notes-panel">
+                                <div class="cmd-panel-header">
+                                    <span>📌</span> Notas Críticas
+                                    <span class="cmd-panel-sub">Alta / Crítica</span>
+                                </div>
+                                <div id="cmdCriticalNotes" class="cmd-critical-notes"></div>
+                            </div>
+
+                            <!-- ÚLTIMOS EVENTOS -->
+                            <div class="cmd-events-panel">
+                                <div class="cmd-panel-header">
+                                    <span>📡</span> Últimos Eventos
+                                    <button class="cmd-panel-action" onclick="app.switchTab('tabEvents')" title="Ver bitácora completa">+ Nuevo</button>
+                                </div>
+                                <div id="cmdEventsWidget" class="cmd-events-widget"></div>
+                            </div>
+
+                            <!-- BAT RUNNER WIDGET -->
+                            <div class="cmd-bat-panel" id="cmdBatPanel" style="display:none;">
+                                <div class="cmd-panel-header">
+                                    <span>⚙️</span> Ejecutor
+                                    <button class="cmd-panel-action" id="cmdBatRunBtn" onclick="app.runBatFromWidget()">▶ Ejecutar</button>
+                                </div>
+                                <div id="cmdBatWidget" class="cmd-bat-widget"></div>
+                            </div>
+                        </div>
+
+                        <!-- QUOTE TICKER -->
+                        <div class="cmd-quote-ticker" id="cmdQuoteTicker">
+                            <div class="cmd-ticker-track" id="cmdTickerTrack">
+                                <span class="cmd-ticker-icon" id="cmdTickerIcon">🧠</span>
+                                <span class="cmd-ticker-text" id="cmdTickerText">Cargando...</span>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
-            </section>
+                <!-- End Tab: Centro de Mando -->
 
-            <section id="viewTasks" class="tasks-container">
-                <div class="split-layout">
-                    <div class="sidebar-column">
-                        <section class="task-input-section" style="margin-bottom: 3rem;">
-                            <div class="card add-task-card">
-                                <h2>Nueva Actividad</h2>
-                                <form id="taskForm" class="task-form">
-                                    <div class="input-group">
-                                        <input type="text" id="taskTitle" placeholder="¿Qué vas a hacer hoy?" required>
-                                    </div>
-                                    <div class="form-row">
-                                        <div class="input-group">
-                                            <label for="taskStart">Inicio</label>
-                                            <input type="datetime-local" id="taskStart">
-                                        </div>
-                                        <div class="input-group">
-                                            <label for="taskEnd">Fin</label>
-                                            <input type="datetime-local" id="taskEnd">
-                                        </div>
-                                    </div>
-                                    <div class="form-row">
-                                        <div class="input-group">
-                                            <label for="taskCategory">Categoría</label>
-                                            <select id="taskCategory">
-                                                <option value="Generales">Generales</option>
-                                                <option value="Trabajo">Trabajo</option>
-                                                <option value="Reuniones">Reuniones</option>
-                                                <option value="Admin">Administrativo</option>
-                                                <option value="Personal">Personal</option>
-                                            </select>
-                                        </div>
-                                        <div class="input-group">
-                                            <label for="taskPriority">Prioridad</label>
-                                            <select id="taskPriority">
-                                                <option value="Baja">Baja</option>
-                                                <option value="Media" selected>Media</option>
-                                                <option value="Alta">Alta</option>
-                                            </select>
-                                        </div>
-                                    </div>
+                <!-- Tab: Actividades -->
+                <div id="tabTasks" class="tab-pane active">
+                    <!-- Column 1: Trello-style Task Board -->
+                    <section class="board-column tasks-board">
+                        <div class="board-header">
+                            <h2>Actividades</h2>
+                            <button id="btnOpenTaskForm" class="btn btn-primary btn-small" title="Crear Tarea Detallada">+ Nueva Tarea</button>
+                        </div>
+                        
+                        <div class="quick-task-input-area" style="display: flex; gap: 10px; margin-bottom: 1.5rem; padding: 0 0.5rem;">
+                            <input type="text" id="quickTaskInput" placeholder="Añadir una actividad rápida..." style="flex: 1; padding: 0.8rem 1rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--glass); color: var(--text-primary); outline: none;">
+                            <button id="btnSaveQuickTask" class="btn btn-primary">Añadir</button>
+                        </div>
 
-                                    <div class="form-row flex-end">
-                                        <label class="checkbox-container">
-                                            <input type="checkbox" id="taskRecurring">
-                                            <span class="checkmark"></span>
-                                            Tarea Recurrente
-                                        </label>
-                                        <div class="submit-actions">
-                                            <button type="button" id="btnCancelEdit" class="btn btn-secondary" style="display: none;">Cancelar</button>
-                                            <button type="submit" id="btnSubmitTask" class="btn btn-primary">Añadir Tarea</button>
-                                        </div>
-                                    </div>
-                                </form>
+                        <div class="board-buckets">
+                            <!-- Bucket: To Do (Hoy) -->
+                            <div class="bucket" id="bucket-todo">
+                                <div class="bucket-title">POR HACER HOY <span class="count" id="count-todo">0</span>
+                                </div>
+                                <div class="bucket-items" id="items-todo" data-status="todo">
+                                    <!-- Tasks injected here -->
+                                </div>
                             </div>
-                        </section>
-                    </div>
 
-                    <div class="content-column">
-                        <div class="tasks-header">
-                            <h2>Tus Actividades</h2>
-                            <div class="filters">
-                                <button class="filter-btn active" data-filter="all">Todas</button>
-                                <button class="filter-btn" data-filter="pending">Pendientes</button>
-                                <button class="filter-btn" data-filter="completed">Completadas</button>
+                            <!-- Bucket: Backlog (Próximamente) -->
+                            <div class="bucket" id="bucket-backlog">
+                                <div class="bucket-title">PRÓXIMAMENTE <span class="count" id="count-backlog">0</span>
+                                </div>
+                                <div class="bucket-items" id="items-backlog" data-status="backlog">
+                                    <!-- Tasks injected here -->
+                                </div>
+                            </div>
+
+                            <!-- Bucket: Terminados -->
+                            <div class="bucket" id="bucket-done">
+                                <div class="bucket-title">COMPLETADOS HOY <span class="count" id="count-done">0</span>
+                                </div>
+                                <div class="bucket-items" id="items-done" data-status="done">
+                                    <!-- Tasks injected here -->
+                                </div>
                             </div>
                         </div>
-                        <div id="taskList" class="task-grid">
-                            <!-- Tasks will be injected here -->
-                            <div class="empty-state">
-                                <p>No hay actividades registradas aún. ¡Empieza ahora!</p>
-                            </div>
-                        </div>
-                    </div>
+                    </section>
                 </div>
-            </section>
-        </main>
 
-        <!-- Summary Modal -->
-        <div id="modalSummary" class="modal">
-            <div class="modal-content">
-                <span class="close-modal">&times;</span>
-                <h3>Resumen para mi jefe</h3>
-                <p>Copia este texto para enviarlo por correo o chat:</p>
-                <textarea id="summaryText" readonly></textarea>
-                <button id="btnCopySummary" class="btn btn-primary">Copiar al portapapeles</button>
-            </div>
+                <!-- Tab: Agenda -->
+                <div id="tabAgenda" class="tab-pane">
+                    <section id="viewAgenda" class="board-column agenda-board">
+                        <div class="board-header">
+                            <div class="agenda-nav">
+                                <button onclick="app.changeAgendaDate(-1)" class="btn-icon">◀</button>
+                                <h2 id="agendaTitle">Agenda de Hoy</h2>
+                                <button onclick="app.changeAgendaDate(1)" class="btn-icon">▶</button>
+                            </div>
+                        </div>
+                        <div id="agendaTimeline" class="agenda-timeline">
+                            <!-- Hourly slots (Grid background) -->
+                            <div id="agendaGrid"></div>
+                            <!-- Absolute Events Overlay -->
+                            <div id="agendaEventsContainer" class="agenda-events-container"></div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Tab: Lista Jerárquica -->
+                <div id="tabNestedTasks" class="tab-pane">
+                    <section class="board-column hierarchical-board">
+                        <div class="board-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                            <h2>Lista Jerárquica de Actividades</h2>
+                            <div style="display: flex; gap: 10px;">
+                                <button id="btnToggleBulkImport" class="btn btn-secondary btn-small">⚡ Captura en Bloque</button>
+                                <button id="btnCopyHierarchicalText" class="btn btn-secondary btn-small">📋 Copiar para Correo</button>
+                                <button id="btnExportHierarchicalImage" class="btn btn-secondary btn-small">🖼️ Exportar Imagen</button>
+                                <button id="btnClearHierarchicalTasks" class="btn btn-danger btn-small">🗑️ Vaciar Todo</button>
+                            </div>
+                        </div>
+
+                        <!-- Bulk Import Section (Initially Hidden) -->
+                        <div id="bulkImportArea" class="bulk-import-card" style="display: none; background: var(--glass); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; box-shadow: 0 8px 32px rgba(0,0,0,0.2); backdrop-filter: blur(10px);">
+                            <h3 style="margin-top: 0; font-size: 1rem; margin-bottom: 0.5rem; color: var(--text-primary);">Añadir actividades estructuradas</h3>
+                            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.4;">
+                                Pega o escribe tu lista de tareas. Usa 2 espacios o tabulación para anidar actividades (como subtareas de la tarea superior).
+                            </p>
+                            <textarea id="bulkImportTextarea" placeholder="Ejemplo:&#10;Revisión de correo&#10;Revisión de servicios&#10;  Módulo Facturación&#10;  Servicio API&#10;    Corregir accesos&#10;Reunión de equipo" rows="8" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-primary); font-family: monospace; font-size: 0.9rem; resize: vertical; outline: none; margin-bottom: 1rem;"></textarea>
+                            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                                <button id="btnCancelBulkImport" class="btn btn-secondary btn-small">Cancelar</button>
+                                <button id="btnSubmitBulkImport" class="btn btn-primary btn-small">Cargar Actividades</button>
+                            </div>
+                        </div>
+
+                        <!-- Tree Container -->
+                        <div class="hierarchical-tree-container" style="background: var(--glass); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 12px; min-height: 400px; backdrop-filter: blur(10px);">
+                            <div id="hierarchicalTree" class="hierarchical-tree">
+                                <!-- Nested tasks will be rendered here -->
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+
+                <!-- Tab: Bitácora de Eventos -->
+                <div id="tabEvents" class="tab-pane">
+                    <section class="board-column events-board">
+                        <div class="board-header" style="display:flex; align-items:center; justify-content:space-between;">
+                            <h2>📡 Bitácora de Eventos</h2>
+                            <button class="btn btn-primary btn-small" onclick="app.openEventForm()">+ Nuevo Evento</button>
+                        </div>
+
+                        <!-- Filters -->
+                        <div class="events-filters" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:1rem;">
+                            <button class="evt-filter-btn active" data-filter="all" onclick="app.filterEvents(this, 'all')">Todos</button>
+                            <button class="evt-filter-btn" data-filter="falla" onclick="app.filterEvents(this, 'falla')">🔴 Fallas</button>
+                            <button class="evt-filter-btn" data-filter="cambio" onclick="app.filterEvents(this, 'cambio')">🟡 Cambios</button>
+                            <button class="evt-filter-btn" data-filter="mantenimiento" onclick="app.filterEvents(this, 'mantenimiento')">🔵 Mantenimiento</button>
+                        </div>
+
+                        <!-- Event list -->
+                        <div id="eventsList" class="events-list"></div>
+                    </section>
+
+                </div>
+                <!-- End Tab: Bitácora -->
+
+                <!-- Tab: Ejecutor .bat -->
+                <div id="tabBatRunner" class="tab-pane">
+                    <section class="board-column bat-runner-board">
+                        <div class="board-header" style="display:flex; align-items:center; justify-content:space-between;">
+                            <h2>⚙️ Ejecutor de Scripts</h2>
+                            <button id="btnRunBat" class="btn btn-primary btn-small" onclick="app.runBatFile()">▶ Ejecutar Script</button>
+                        </div>
+
+                        <!-- Config panel -->
+                        <div class="bat-config-panel">
+                            <div class="bat-config-header" onclick="app.toggleBatConfig()" style="cursor:pointer; display:flex; align-items:center; gap:8px;">
+                                <span>🔧</span>
+                                <span>Configuración del Script</span>
+                                <span id="batConfigToggleIcon" style="margin-left:auto;">▼</span>
+                            </div>
+                            <div id="batConfigBody" class="bat-config-body">
+                                <div class="form-group">
+                                    <label>Ruta del archivo .bat</label>
+                                    <input type="text" id="batPath" placeholder="Ej: D:\scripts\generar_reportes.bat" oninput="app.saveBatConfig()">
+                                </div>
+                                <div class="form-group">
+                                    <label>Carpeta de archivos de salida</label>
+                                    <input type="text" id="batOutputDir" placeholder="Ej: D:\scripts\output\" oninput="app.saveBatConfig()">
+                                </div>
+                                <div class="form-group">
+                                    <label>Timeout (segundos)</label>
+                                    <input type="number" id="batTimeout" value="60" min="5" max="300" oninput="app.saveBatConfig()" style="max-width:120px;">
+                                </div>
+                                <div class="bat-files-config">
+                                    <label>Archivos .txt de salida (hasta 3)</label>
+                                    <div class="bat-files-inputs">
+                                        <input type="text" id="batFile1" placeholder="reporte1.txt" oninput="app.saveBatConfig()">
+                                        <input type="text" id="batFile2" placeholder="reporte2.txt" oninput="app.saveBatConfig()">
+                                        <input type="text" id="batFile3" placeholder="reporte3.txt" oninput="app.saveBatConfig()">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Status bar -->
+                        <div id="batStatusBar" class="bat-status-bar" style="display:none;"></div>
+
+                        <!-- Output tabs -->
+                        <div class="bat-output-area" id="batOutputArea" style="display:none;">
+                            <div class="bat-output-tabs" id="batOutputTabs"></div>
+                            <div class="bat-output-content">
+                                <div style="display:flex; justify-content:flex-end; margin-bottom:6px;">
+                                    <button class="btn btn-secondary btn-small" onclick="app.copyBatOutput()">📋 Copiar</button>
+                                </div>
+                                <pre id="batOutputText" class="bat-output-text"></pre>
+                            </div>
+                        </div>
+
+                        <div id="batEmptyState" class="bat-empty-state">
+                            <div style="font-size:2.5rem; margin-bottom:8px;">⚙️</div>
+                            <div>Configura la ruta del script y presiona <strong>Ejecutar</strong>.</div>
+                        </div>
+                    </section>
+                </div>
+                <!-- End Tab: Ejecutor -->
+                <!-- Tab: Ideas y Recados -->
+                <div id="tabNotes" class="tab-pane">
+                    <section class="board-column notes-board">
+                        <div class="board-header">
+                            <h2>Ideas y Recados</h2>
+                            <button id="btnOpenNoteForm" class="btn btn-primary btn-small">📝 Nueva Nota</button>
+                        </div>
+
+                        <div class="notes-kanban">
+                            <!-- Column: Baja -->
+                            <div class="notes-column" data-importance="1">
+                                <div class="bucket-title">BAJA</div>
+                                <div class="notes-items" id="notes-importance-1"></div>
+                            </div>
+
+                            <!-- Column: Media -->
+                            <div class="notes-column" data-importance="2">
+                                <div class="bucket-title">MEDIA</div>
+                                <div class="notes-items" id="notes-importance-2"></div>
+                            </div>
+
+                            <!-- Column: Alta -->
+                            <div class="notes-column" data-importance="3">
+                                <div class="bucket-title">ALTA</div>
+                                <div class="notes-items" id="notes-importance-3"></div>
+                            </div>
+
+                            <!-- Column: Crítica -->
+                            <div class="notes-column" data-importance="4">
+                                <div class="bucket-title">CRÍTICA</div>
+                                <div class="notes-items" id="notes-importance-4"></div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Tab Pendientes Removido -->
+
+                <!-- Tab: Server Vault -->
+                <div id="tabServerVault" class="tab-pane">
+                    <section class="board-column server-vault-board">
+                        <div class="board-header">
+                            <h2>Server Vault</h2>
+                            <button id="btnOpenServerForm" class="btn btn-primary btn-small">🖥️ Nuevo Servidor</button>
+                        </div>
+                        <div class="server-vault-container">
+                            <div class="server-search-bar" style="margin-bottom: 1.5rem; display: flex; gap: 8px;">
+                                <input type="text" id="serverSearchInput" placeholder="Buscar servidor por hostname, IP, app, stack, notas..." style="flex: 1; padding: 0.75rem 1.25rem; background: var(--glass); border: 1px solid var(--border-color); border-radius: 10px; color: var(--text-primary); outline: none;">
+                            </div>
+                            <div class="server-security-warning">
+                                <span>⚠️ <strong>Nota de Seguridad:</strong> Los datos se almacenan de forma local en tu navegador (IndexedDB) sin cifrado adicional en servidor. Evita usar en dispositivos públicos.</span>
+                            </div>
+                            <div id="serverList">
+                                <!-- Servidores inyectados por JS -->
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Tab: Bóveda Contraseñas -->
+                <div id="tabPasswords" class="tab-pane">
+                    <section class="board-column passwords-board">
+                        <div class="board-header">
+                            <h2>Bóveda de Contraseñas</h2>
+                            <button id="btnOpenPasswordForm" class="btn btn-secondary btn-small">+ Contraseña</button>
+                        </div>
+                        <div class="passwords-container">
+                            <div class="passwords-search-bar" style="margin-bottom: 1.5rem; display: flex; gap: 8px;">
+                                <input type="text" id="passwordSearchInput" placeholder="Buscar contraseña por título, usuario, URL, notas..." style="flex: 1; padding: 0.75rem 1.25rem; background: var(--glass); border: 1px solid var(--border-color); border-radius: 10px; color: var(--text-primary); outline: none;">
+                            </div>
+                            <div class="server-security-warning">
+                                <span>⚠️ <strong>Nota de Seguridad:</strong> Los datos se almacenan de forma local en tu navegador (IndexedDB) sin cifrado adicional en servidor. Evita usar en dispositivos públicos.</span>
+                            </div>
+                            <div class="directory-table-container">
+                                <table class="directory-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Título / Servicio</th>
+                                            <th>Usuario</th>
+                                            <th>Contraseña</th>
+                                            <th>URL</th>
+                                            <th>Notas</th>
+                                            <th style="text-align: center; width: 110px;">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="passwordList">
+                                        <!-- Password rows injected by JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Tab: Documentos -->
+                <div id="tabDocuments" class="tab-pane">
+                    <section class="board-column documents-board">
+                        <div class="board-header">
+                            <h2>Gestor de Documentos</h2>
+                            <div class="document-upload-btn-container">
+                                <label for="fileUploadInput" class="btn btn-primary" style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                                    <span>📤</span> Subir Archivo
+                                </label>
+                                <input type="file" id="fileUploadInput" style="display: none;" multiple accept=".doc,.docx,.xls,.xlsx,.ppt,.pptx,.pdf,image/*">
+                            </div>
+                        </div>
+                        <div class="documents-container" style="display: flex; flex-direction: column; gap: 1.5rem; height: 100%; overflow: hidden;">
+                            <!-- Top Control Area (Split 50/50) -->
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: stretch; margin-bottom: 0.5rem;">
+                                <!-- Drag & Drop Zone (Left Half) -->
+                                <div class="file-drop-zone" id="fileDropZone" style="height: 100%; min-height: 130px; margin: 0;">
+                                    <div class="drop-zone-content">
+                                        <span class="drop-icon" style="font-size: 2rem;">📁</span>
+                                        <h3 style="font-size: 1.05rem;">Arrastra tus archivos aquí</h3>
+                                        <p style="text-align: center;">Soporta imágenes, PDFs, Word, Excel y PowerPoint</p>
+                                    </div>
+                                </div>
+
+                                <!-- Search and Filters (Right Half) -->
+                                <div class="documents-toolbar" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 0; height: 100%; justify-content: center;">
+                                    <div class="document-search-container" style="display: flex; align-items: center; background: var(--glass); border: 1px solid var(--border-color); border-radius: 10px; padding: 0.5rem 1rem; width: 100%;">
+                                        <span style="margin-right: 0.5rem; opacity: 0.5;">🔍</span>
+                                        <input type="text" id="documentSearchInput" placeholder="Buscar documentos..." style="background: transparent; border: none; color: var(--text-primary); width: 100%; outline: none;">
+                                    </div>
+                                    <div class="document-filters" style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-start;">
+                                        <button class="btn btn-secondary active" data-filter="all">Todos</button>
+                                        <button class="btn btn-secondary" data-filter="image">Imágenes</button>
+                                        <button class="btn btn-secondary" data-filter="pdf">PDF</button>
+                                        <button class="btn btn-secondary" data-filter="word">Word</button>
+                                        <button class="btn btn-secondary" data-filter="excel">Excel</button>
+                                        <button class="btn btn-secondary" data-filter="powerpoint">PowerPoint</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Document List Table -->
+                            <div class="directory-table-container" style="flex: 1; overflow-y: auto;">
+                                <table class="directory-table documents-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 50px; text-align: center;">Tipo</th>
+                                            <th>Nombre del Archivo</th>
+                                            <th>Tamaño</th>
+                                            <th>Fecha de Subida</th>
+                                            <th style="text-align: center; width: 140px;">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="documentsGrid">
+                                        <!-- Document rows injected by JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Tab: Directorio -->
+                <div id="tabDirectory" class="tab-pane">
+                    <section class="board-column directory-board">
+                        <div class="board-header">
+                            <h2>Directorio Telefónico</h2>
+                            <button id="btnOpenContactForm" class="btn btn-primary btn-small">👤 Nuevo Contacto</button>
+                        </div>
+                        <div class="directory-container">
+                            <div class="directory-search-bar" style="margin-bottom: 1.5rem; display: flex; gap: 8px;">
+                                <input type="text" id="directorySearchInput" placeholder="Buscar contacto por nombre, teléfono, responsable, acciones..." style="flex: 1; padding: 0.75rem 1.25rem; background: var(--glass); border: 1px solid var(--border-color); border-radius: 10px; color: var(--text-primary); outline: none;">
+                            </div>
+                            <div class="directory-table-container">
+                                <table class="directory-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Nombre Completo / Equipo</th>
+                                            <th>Teléfono o Extensión</th>
+                                            <th>Correo Electrónico</th>
+                                            <th>Responsable</th>
+                                            <th>Acciones en que apoyan</th>
+                                            <th style="text-align: center; width: 110px;">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="contactList">
+                                        <!-- Contact rows injected by JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Tab: Versiones -->
+                <div id="tabVersions" class="tab-pane">
+                    <section class="board-column versions-board">
+                        <div class="board-header">
+                            <h2>Historial de Versiones (Oracle DB)</h2>
+                            <button id="btnRefreshVersions" class="btn btn-secondary btn-small" type="button">🔄 Actualizar Lista</button>
+                        </div>
+                        <div class="versions-container" style="padding: 1.5rem 1rem; max-width: 800px; margin: 0 auto;">
+                            <div id="versionsList" class="versions-list" style="display: flex; flex-direction: column; gap: 12px;">
+                                <!-- Versions list injected here -->
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Tab: Papelera -->
+                <div id="tabTrash" class="tab-pane">
+                    <section class="board-column trash-board">
+                        <div class="board-header">
+                            <h2>Papelera</h2>
+                            <button id="btnClearTrash" class="btn btn-danger btn-small">🗑️ Vaciar Papelera</button>
+                        </div>
+
+                        <div id="trashContainer" class="trash-container">
+                            <!-- Deleted items injected here -->
+                            <div class="empty-state">La papelera está vacía</div>
+                        </div>
+                    </section>
+                </div>
+            </main>
         </div>
-
-        <!-- Pomodoro Modal -->
-        <div id="modalPomodoro" class="modal">
-            <div class="modal-content pomodoro-modal-content">
-                <span class="close-modal">&times;</span>
-                <div class="pomodoro-timer">
-                    <div class="timer-display" id="pomodoroDisplay">25:00</div>
-                    <div class="timer-mode" id="pomodoroMode">Sesión de Trabajo</div>
-                    <div class="timer-controls">
-                        <button id="btnPomodoroStart" class="btn btn-primary">Iniciar</button>
-                        <button id="btnPomodoroReset" class="btn btn-secondary">Reset</button>
-                    </div>
-                </div>
-                <div class="pomodoro-settings">
-                    <p>Encuentra tu ritmo con el método Pomodoro.</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Hidden input for file upload -->
-        <input type="file" id="inputFileJson" style="display: none;" accept=".json">
-
-        <script src="app.js"></script>
     </div>
+
+    <!-- Modals -->
+    <!-- Task Modal -->
+    <div id="modalTask" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 id="taskModalTitle">Nueva Actividad</h2>
+            <form id="taskForm" class="task-form">
+                <div class="input-group">
+                    <input type="text" id="taskTitle" placeholder="¿Qué vas a hacer?" required>
+                </div>
+                <div class="form-row">
+                    <div class="input-group">
+                        <label>Prioridad / Etiqueta</label>
+                        <select id="taskPriority">
+                            <option value="media">Estándar</option>
+                            <option value="alta">🔴 Urgente</option>
+                            <option value="baja">🟢 Personal</option>
+                            <option value="trabajo">🔵 Trabajo</option>
+                        </select>
+                    </div>
+                    <div class="input-group" style="flex: 2;">
+                        <label>Categoría</label>
+                        <div class="category-input-group" style="display: flex; gap: 8px;">
+                            <select id="taskCategory">
+                                <!-- Categories injected by JS -->
+                            </select>
+                            <button type="button" class="btn btn-secondary" id="btnAddCategory"
+                                style="padding: 0 10px;">+</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="input-group">
+                        <label>Dependencia</label>
+                        <select id="taskDependencyType" onchange="app.handleDependencyTypeChange(this.value)">
+                            <option value="me">🙋 Depende de mí</option>
+                            <option value="area">🏢 Depende de otra área</option>
+                        </select>
+                    </div>
+                    <div class="input-group" id="taskDependencyAreaContainer" style="display: none; flex: 2;">
+                        <label>Área o Responsable</label>
+                        <input type="text" id="taskDependencyArea" placeholder="Ej. Sistemas, Finanzas, Compras...">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="input-group">
+                        <label>Inicio</label>
+                        <input type="datetime-local" id="taskStart">
+                    </div>
+                    <div class="input-group">
+                        <label>Fin proyectado</label>
+                        <input type="datetime-local" id="taskEnd">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="input-group">
+                        <label>Repetición</label>
+                        <select id="taskRecurrence" onchange="app.handleRecurrenceChange(this.value)">
+                            <option value="none">No se repite</option>
+                            <option value="daily">Diariamente</option>
+                            <option value="workdays">Cada día laborable (L-V)</option>
+                            <option value="weekly">Semanalmente</option>
+                            <option value="monthly">Mensualmente</option>
+                            <option value="yearly">Anualmente</option>
+                            <option value="custom">Personalizado...</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row" id="customRecurrenceBadgeContainer" style="display: none;">
+                    <div class="input-group" style="width: 100%;">
+                        <div class="custom-recurrence-badge" style="display: flex; align-items: center; justify-content: space-between; background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.35); padding: 8px 12px; border-radius: 8px; font-size: 0.85rem; color: var(--text-primary);">
+                            <span id="customRecurrenceBadgeText">🔁 Configuración personalizada</span>
+                            <button type="button" class="btn btn-secondary btn-small" onclick="app.openRecurrenceModal()" style="padding: 3px 8px; font-size: 0.78rem;">✏️ Modificar</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row" id="taskWeeklyDaysContainer" style="display: none;">
+                    <div class="input-group">
+                        <label>Repetir los días</label>
+                        <div class="day-picker" id="taskDayPicker">
+                            <button type="button" class="day-btn" data-day="0">D</button>
+                            <button type="button" class="day-btn" data-day="1">L</button>
+                            <button type="button" class="day-btn" data-day="2">M</button>
+                            <button type="button" class="day-btn" data-day="3">X</button>
+                            <button type="button" class="day-btn" data-day="4">J</button>
+                            <button type="button" class="day-btn" data-day="5">V</button>
+                            <button type="button" class="day-btn" data-day="6">S</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="taskMonthlyContainer" style="display: none;" class="sub-section">
+                    <div class="pattern-option">
+                        <input type="radio" name="taskMonthPat" id="taskPatMonthDay" checked>
+                        <label for="taskPatMonthDay">El día</label>
+                        <input type="number" id="taskMonthDay" value="1" min="1" max="31" style="width: 70px;">
+                    </div>
+                    <div class="pattern-option">
+                        <input type="radio" name="taskMonthPat" id="taskPatMonthRelative">
+                        <label for="taskPatMonthRelative">El</label>
+                        <select id="taskMonthWeek" style="width: auto;">
+                            <option value="1">Primer</option>
+                            <option value="2">Segundo</option>
+                            <option value="3">Tercero</option>
+                            <option value="4">Cuarto</option>
+                            <option value="last">Último</option>
+                        </select>
+                        <select id="taskMonthDayName" style="width: auto;">
+                            <option value="1">Lunes</option>
+                            <option value="2">Martes</option>
+                            <option value="3">Miércoles</option>
+                            <option value="4">Jueves</option>
+                            <option value="5">Viernes</option>
+                            <option value="6">Sábado</option>
+                            <option value="0">Domingo</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="taskYearlyContainer" style="display: none;" class="sub-section">
+                    <div class="pattern-option">
+                        <label>El</label>
+                        <input type="number" id="taskYearDay" value="1" min="1" max="31" style="width: 70px;">
+                        <label>de</label>
+                        <select id="taskYearMonth" style="width: auto;">
+                            <option value="0">Enero</option>
+                            <option value="1">Febrero</option>
+                            <option value="2">Marzo</option>
+                            <option value="3">Abril</option>
+                            <option value="4">Mayo</option>
+                            <option value="5">Junio</option>
+                            <option value="6">Julio</option>
+                            <option value="7">Agosto</option>
+                            <option value="8">Septiembre</option>
+                            <option value="9">Octubre</option>
+                            <option value="10">Noviembre</option>
+                            <option value="11">Diciembre</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="timeline-section" style="margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
+                    <h3>Bitácora / Historial</h3>
+                    <div id="taskTimelineList" class="timeline-list">
+                        <!-- Timeline entries injected here -->
+                    </div>
+                    <div class="timeline-input-group">
+                        <input type="text" id="taskTimelineInput" placeholder="Registrar un nuevo paso o comentario...">
+                        <button type="button" id="btnAddTimelineEntry" class="btn btn-secondary btn-small">Añadir</button>
+                    </div>
+                </div>
+
+                <div class="submit-actions">
+                    <button type="submit" class="btn btn-primary" id="btnSubmitTask">Guardar Tarea</button>
+                    <button type="button" class="btn btn-secondary" id="btnCancelEdit"
+                        style="display:none;">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Server Notes Modal -->
+    <div id="modalServerNotes" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Notas del Servidor: <span id="serverNotesHostname"></span></h2>
+            <textarea id="serverNotesText" readonly style="width: 100%; height: 300px; margin-top: 1rem; background: var(--glass); padding: 1rem; font-size: 0.95rem; font-family: monospace; color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 8px; resize: none;"></textarea>
+            <div class="submit-actions" style="margin-top: 1rem;">
+                <button id="btnCopyServerNotes" class="btn btn-primary" type="button">Copiar al Portapapeles</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Note Modal -->
+    <div id="modalNote" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 id="noteModalTitle">Nueva Idea</h2>
+            <form id="noteForm">
+                <textarea id="noteText" placeholder="Escribe aquí tu idea o recado..." required></textarea>
+                <div class="form-row">
+                    <div class="input-group">
+                        <label>Importancia</label>
+                        <select id="noteImportance">
+                            <option value="1">🟢 Baja</option>
+                            <option value="2" selected>🔵 Media</option>
+                            <option value="3">🟡 Alta</option>
+                            <option value="4">🔴 Crítica</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Recordatorio (opcional)</label>
+                        <input type="datetime-local" id="noteDate">
+                    </div>
+                </div>
+                <div class="color-picker" id="noteColorPicker">
+                    <div class="color-btn yellow active" data-color="yellow"></div>
+                    <div class="color-btn blue" data-color="blue"></div>
+                    <div class="color-btn green" data-color="green"></div>
+                    <div class="color-btn purple" data-color="purple"></div>
+                    <div class="color-btn pink" data-color="pink"></div>
+                </div>
+                <div class="submit-actions">
+                    <button type="button" class="btn btn-primary" id="btnSaveNote">Guardar</button>
+                    <button type="button" class="btn btn-secondary" id="btnCancelNoteEdit"
+                        style="display:none;">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Pomodoro Modal -->
+    <div id="modalPomodoro" class="modal">
+        <div class="modal-content pomodoro-modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="pomodoro-timer">
+                <div id="pomodoroMode" class="timer-mode">Concentración</div>
+                <div id="pomodoroDisplay" class="timer-display">25:00</div>
+                <div class="timer-controls">
+                    <button id="btnPomodoroStart" class="btn btn-primary">Iniciar</button>
+                    <button id="btnPomodoroReset" class="btn btn-secondary">Reiniciar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Modal -->
+    <div id="modalSummary" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Resumen Diario</h2>
+            <textarea id="summaryText" readonly></textarea>
+            <div class="submit-actions">
+                <button id="btnCopySummary" class="btn btn-primary">Copiar al Portapapeles</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Advanced Recurrence Modal -->
+    <div id="modalRecurrence" class="modal">
+        <div class="modal-content recurrence-modal">
+            <div class="modal-header">
+                <h2>Establecer periodicidad</h2>
+                <span class="close-modal-recurrence" id="btnCloseRecurrenceModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="recurrence-section">
+                    <div class="recurrence-row">
+                        <label>Inicio</label>
+                        <input type="date" id="recStart">
+                    </div>
+
+                    <div class="recurrence-row">
+                        <label>Repetir cada</label>
+                        <div class="interval-group">
+                            <input type="number" id="recInterval" value="1" min="1">
+                            <select id="recType" onchange="app.updateRecurrenceFields()">
+                                <option value="day">Día</option>
+                                <option value="week" selected>Semana</option>
+                                <option value="month">Mes</option>
+                                <option value="year">Año</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Weekly Specifics -->
+                    <div id="sectionWeekly" class="sub-section">
+                        <div class="day-picker">
+                            <button type="button" class="day-btn" data-day="0">D</button>
+                            <button type="button" class="day-btn" data-day="1">L</button>
+                            <button type="button" class="day-btn" data-day="2">M</button>
+                            <button type="button" class="day-btn" data-day="3">X</button>
+                            <button type="button" class="day-btn" data-day="4">J</button>
+                            <button type="button" class="day-btn" data-day="5">V</button>
+                            <button type="button" class="day-btn" data-day="6">S</button>
+                        </div>
+                    </div>
+
+                    <!-- Monthly Specifics -->
+                    <div id="sectionMonthly" class="sub-section" style="display:none;">
+                        <div class="pattern-option">
+                            <input type="radio" name="monthPat" id="patMonthDay" checked>
+                            <label for="patMonthDay">El día</label>
+                            <input type="number" id="recMonthDay" value="1" min="1" max="31">
+                        </div>
+                        <div class="pattern-option">
+                            <input type="radio" name="monthPat" id="patMonthRelative">
+                            <label for="patMonthRelative">El</label>
+                            <select id="recMonthWeek">
+                                <option value="1">Primer</option>
+                                <option value="2">Segundo</option>
+                                <option value="3">Tercero</option>
+                                <option value="4">Cuarto</option>
+                                <option value="last">Último</option>
+                            </select>
+                            <select id="recMonthDayName">
+                                <option value="1">Lunes</option>
+                                <option value="2">Martes</option>
+                                <option value="3">Miércoles</option>
+                                <option value="4">Jueves</option>
+                                <option value="5">Viernes</option>
+                                <option value="6">Sábado</option>
+                                <option value="0">Domingo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Yearly Specifics -->
+                    <div id="sectionYearly" class="sub-section" style="display:none;">
+                        <label>El</label>
+                        <input type="number" id="recYearDay" value="1" min="1" max="31">
+                        <label>de</label>
+                        <select id="recYearMonth">
+                            <option value="0">Enero</option>
+                            <option value="1">Febrero</option>
+                            <option value="2">Marzo</option>
+                            <option value="3">Abril</option>
+                            <option value="4">Mayo</option>
+                            <option value="5">Junio</option>
+                            <option value="6">Julio</option>
+                            <option value="7">Agosto</option>
+                            <option value="8">Septiembre</option>
+                            <option value="9">Octubre</option>
+                            <option value="10">Noviembre</option>
+                            <option value="11">Diciembre</option>
+                        </select>
+                    </div>
+
+                    <div class="recurrence-row">
+                        <label>Fin</label>
+                        <input type="date" id="recEnd">
+                    </div>
+                </div>
+
+                <div class="recurrence-summary">
+                    <p id="recSummaryText">Se produce cada semana empezando el...</p>
+                </div>
+            </div>
+            <div class="submit-actions">
+                <button type="button" class="btn btn-primary" id="btnSaveRecurrence" style="width: 100%;">Guardar Periodicidad</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Server Modal -->
+    <div id="modalServer" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 id="serverModalTitle">Nuevo Servidor</h2>
+            <form id="serverForm" class="task-form">
+                <div class="input-group">
+                    <label>IP / Host</label>
+                    <input type="text" id="serverIP" placeholder="Ej: 192.168.1.100 o google.com" required>
+                </div>
+                <div class="input-group">
+                    <label>Hostname</label>
+                    <input type="text" id="serverHostname" placeholder="Ej: prod-web-01" required>
+                </div>
+                <div class="input-group">
+                    <label>Usuario</label>
+                    <input type="text" id="serverUser" placeholder="Ej: admin / root">
+                </div>
+                <div class="form-row">
+                    <div class="input-group">
+                        <label>Ambiente</label>
+                        <select id="serverEnvironment">
+                            <option value="produccion">🔴 Producción</option>
+                            <option value="desarrollo" selected>🟢 Desarrollo</option>
+                        </select>
+                    </div>
+                    <div class="input-group" style="display: flex; flex-direction: column; justify-content: center; gap: 8px;">
+                        <label>Componentes / Stack</label>
+                        <div style="display: flex; gap: 16px; align-items: center; margin-top: 4px;">
+                            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; margin-bottom: 0; font-size: 0.85rem; color: var(--text-secondary);">
+                                <input type="checkbox" id="serverHasOracle" style="width: auto; margin: 0; cursor: pointer;"> Oracle DB
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; margin-bottom: 0; font-size: 0.85rem; color: var(--text-secondary);">
+                                <input type="checkbox" id="serverHasJboss" style="width: auto; margin: 0; cursor: pointer;"> JBoss
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="input-group">
+                        <label>Aplicación / Rol</label>
+                        <input type="text" id="serverApp" placeholder="Ej: Backend API">
+                    </div>
+                    <div class="input-group">
+                        <label>Base de Datos</label>
+                        <input type="text" id="serverDB" placeholder="Ej: PostgreSQL">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="input-group">
+                        <label>Contraseña Actual</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="password" id="serverCurrentPass" placeholder="Contraseña actual" style="flex: 1;">
+                            <button type="button" class="btn btn-secondary btn-toggle-pass" data-target="serverCurrentPass" style="padding: 0 10px;">👁️</button>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Contraseña Anterior</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="password" id="serverPrevPass" placeholder="Contraseña anterior" style="flex: 1;">
+                            <button type="button" class="btn btn-secondary btn-toggle-pass" data-target="serverPrevPass" style="padding: 0 10px;">👁️</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Notas</label>
+                    <textarea id="serverNotes" placeholder="Notas adicionales sobre el servidor..." rows="3" style="width: 100%; resize: vertical;"></textarea>
+                </div>
+                <div class="submit-actions">
+                    <button type="submit" class="btn btn-primary" id="btnSubmitServer">Guardar Servidor</button>
+                    <button type="button" class="btn btn-secondary" id="btnCancelServerEdit" style="display:none;">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Contact Modal -->
+    <div id="modalContact" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 id="contactModalTitle">Nuevo Contacto</h2>
+            <form id="contactForm" class="task-form">
+                <div class="input-group">
+                    <label>Nombre Completo</label>
+                    <input type="text" id="contactName" placeholder="Ej: Soporte TI / Mesa de Ayuda" required>
+                </div>
+                <div class="form-row">
+                    <div class="input-group">
+                        <label>Teléfono</label>
+                        <input type="tel" id="contactPhone" placeholder="Ej: +34 600 000 000" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Correo Electrónico</label>
+                        <input type="email" id="contactEmail" placeholder="Ej: soporte@empresa.com">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Responsable</label>
+                    <textarea id="contactNotes" placeholder="Nombre de los responsables..." rows="2" style="width: 100%; resize: vertical;"></textarea>
+                </div>
+                <div class="input-group">
+                    <label>Acciones en que apoyan</label>
+                    <textarea id="contactSupportActions" placeholder="Detalla las acciones en que apoyan..." rows="3" style="width: 100%; resize: vertical;"></textarea>
+                </div>
+                <div class="submit-actions">
+                    <button type="submit" class="btn btn-primary" id="btnSubmitContact">Guardar Contacto</button>
+                    <button type="button" class="btn btn-secondary" id="btnCancelContactEdit" style="display:none;">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- File Preview Modal -->
+    <div id="modalFilePreview" class="modal">
+        <div class="modal-content file-preview-modal-content" style="max-width: 90vw; width: 1000px; height: 85vh; display: flex; flex-direction: column;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2 id="previewFileName" style="font-size: 1.25rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80%;">Previsualización de Archivo</h2>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button id="btnDownloadPreviewFile" class="btn btn-primary btn-small">Descargar 📥</button>
+                    <span class="close-modal" id="closePreviewModal" style="cursor: pointer; font-size: 1.5rem; line-height: 1;">&times;</span>
+                </div>
+            </div>
+            <div id="filePreviewBody" style="flex: 1; background: rgba(0,0,0,0.2); border-radius: 8px; overflow: hidden; display: flex; justify-content: center; align-items: center;">
+                <!-- Dynamically loaded preview (img or iframe) -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Master Password Modal -->
+    <div id="modalMasterPassword" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <span class="close-modal">&times;</span>
+            <div style="font-size: 3rem; margin-bottom: 10px;">🔒</div>
+            <h2 id="masterPasswordTitle">Desbloquear Bóvedas</h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 20px;" id="masterPasswordDesc">
+                Ingresa tu contraseña maestra para descifrar las contraseñas.
+            </p>
+            <form id="masterPasswordForm" class="task-form">
+                <div class="input-group">
+                    <input type="password" id="inputMasterPassword" placeholder="Contraseña maestra..." required style="text-align: center; font-size: 1.2rem; padding: 12px;">
+                </div>
+                <div class="submit-actions" style="justify-content: center; margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary" id="btnSubmitMasterPassword" style="width: 100%;">Desbloquear</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Password Modal -->
+    <div id="modalPassword" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 id="passwordModalTitle">Nueva Contraseña</h2>
+            <form id="passwordForm" class="task-form">
+                <div class="input-group">
+                    <label>Título / Servicio</label>
+                    <input type="text" id="passTitle" placeholder="Ej: Portal RRHH" required>
+                </div>
+                <div class="form-row">
+                    <div class="input-group">
+                        <label>Nombre de Usuario</label>
+                        <input type="text" id="passUser" placeholder="Ej: usuario.app o admin@empresa.com">
+                    </div>
+                    <div class="input-group">
+                        <label>Contraseña</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="password" id="passValue" placeholder="Contraseña secreta" style="flex: 1;" required>
+                            <button type="button" class="btn btn-secondary btn-toggle-pass" data-target="passValue" style="padding: 0 10px;">👁️</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>URL</label>
+                    <input type="url" id="passUrl" placeholder="Ej: https://portal.empresa.com">
+                </div>
+                <div class="input-group">
+                    <label>Notas</label>
+                    <textarea id="passNotes" placeholder="Notas adicionales..." rows="3" style="width: 100%; resize: vertical;"></textarea>
+                </div>
+                <div class="submit-actions">
+                    <button type="submit" class="btn btn-primary" id="btnSubmitPassword">Guardar Contraseña</button>
+                    <button type="button" class="btn btn-secondary" id="btnCancelPasswordEdit" style="display:none;">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+                    <!-- Event Form Modal -->
+                    <div id="eventFormModal" class="modal-overlay" style="display:none;">
+                        <div class="modal-box event-modal">
+                            <div class="modal-header">
+                                <h3 id="eventFormTitle">📡 Registrar Evento</h3>
+                                <button class="modal-close" onclick="app.closeEventForm()">✕</button>
+                            </div>
+                            <div class="modal-body">
+                                <input type="hidden" id="eventId" value="">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Tipo de Evento</label>
+                                        <select id="eventType">
+                                            <option value="falla">🔴 Falla / Incidente</option>
+                                            <option value="cambio">🟡 Cambio / RFC</option>
+                                            <option value="mantenimiento">🔵 Mantenimiento</option>
+                                            <option value="otro">⚪ Otro</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Impacto</label>
+                                        <select id="eventImpact">
+                                            <option value="critico">🔴 Crítico</option>
+                                            <option value="alto">🟠 Alto</option>
+                                            <option value="medio" selected>🟡 Medio</option>
+                                            <option value="bajo">🟢 Bajo</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Servidor / Sistema</label>
+                                        <input type="text" id="eventServer" placeholder="Ej: SRV-PROD-01 (192.168.1.50)" autocomplete="off">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Responsable</label>
+                                        <input type="text" id="eventResponsible" placeholder="Ej: Admin / Soporte TI">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Fecha</label>
+                                        <input type="date" id="eventDate">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Hora Inicio</label>
+                                        <input type="time" id="eventTime">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Duración</label>
+                                        <input type="text" id="eventDuration" placeholder="Ej: 45 min">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Descripción / Acciones Realizadas</label>
+                                    <textarea id="eventDescription" rows="3" placeholder="Describe el evento, causa raíz y acciones realizadas..."></textarea>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Estado</label>
+                                        <select id="eventStatus">
+                                            <option value="abierto">🔴 Abierto</option>
+                                            <option value="en-proceso">🟡 En proceso</option>
+                                            <option value="resuelto" selected>🟢 Resuelto</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-secondary" onclick="app.closeEventForm()">Cancelar</button>
+                                <button class="btn btn-primary" onclick="app.saveEvent()">💾 Guardar Evento</button>
+                            </div>
+                        </div>
+                    </div>
+
+    <!-- Input for Backup -->
+    <input type="file" id="inputFileJson" style="display:none;">
+
+    <!-- Teams / Outlook Style Meeting Reminder Floating Container -->
+    <div id="teamsMeetingReminderContainer" class="teams-reminder-container"></div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="app.js"></script>
 </body>
+
 </html>
